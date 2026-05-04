@@ -5,6 +5,7 @@ interface CellProps {
   isFixed: boolean;
   isError: boolean;
   isHighlighted: boolean;
+  isInRowOrCol: boolean;
   isSelected: boolean;
   row: number;
   col: number;
@@ -19,7 +20,7 @@ function getBlockBorder(row: number, col: number): string {
   return [t, l, b, r].filter(Boolean).join(' ');
 }
 
-export function Cell({ value, isFixed, isError, isHighlighted, isSelected, row, col, onSelect }: CellProps) {
+export function Cell({ value, isFixed, isError, isHighlighted, isInRowOrCol, isSelected, row, col, onSelect }: CellProps) {
   let bg = 'bg-transparent';
   let textColor = isFixed ? 'text-white/90' : 'text-[#07b6d5]';
   let extra = '';
@@ -32,7 +33,11 @@ export function Cell({ value, isFixed, isError, isHighlighted, isSelected, row, 
     textColor = 'text-red-400';
     extra = 'animate-shake';
   } else if (isHighlighted) {
-    bg = 'bg-[rgba(7,182,213,0.07)]';
+    // mesmo número que o selecionado — destaque médio
+    bg = 'bg-[rgba(7,182,213,0.12)]';
+  } else if (isInRowOrCol) {
+    // mesma linha ou coluna — destaque sutil
+    bg = 'bg-[rgba(255,255,255,0.04)]';
   }
 
   return (

@@ -3,6 +3,7 @@ export interface SudokuCell {
   isFixed: boolean;
   isError: boolean;
   isHighlighted: boolean;
+  isInRowOrCol: boolean; // mesma linha ou coluna da célula selecionada
 }
 
 export interface SudokuGame {

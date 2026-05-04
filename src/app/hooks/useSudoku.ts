@@ -13,6 +13,7 @@ function parseGrid(puzzle: string): SudokuGrid {
         isFixed: char !== '-',
         isError: false,
         isHighlighted: false,
+        isInRowOrCol: false,
       };
     })
   );
@@ -26,6 +27,7 @@ export function useSudoku() {
         isFixed: false,
         isError: false,
         isHighlighted: false,
+        isInRowOrCol: false,
       }))
     ) as SudokuGrid,
     solution: '' as string,
@@ -55,6 +57,9 @@ export function useSudoku() {
       const newGrid = prev.grid.map((r, ri) =>
         r.map((c, ci) => ({
           ...c,
+          // mesma linha ou coluna (exceto a própria célula)
+          isInRowOrCol: (ri === row || ci === col) && !(ri === row && ci === col),
+          // mesmo número que o selecionado (exceto a própria célula)
           isHighlighted:
             selectedValue !== null &&
             c.value === selectedValue &&
@@ -107,9 +112,18 @@ export function useSudoku() {
     });
   }, []);
 
+  const goHome = useCallback(() => {
+    setState((prev) => ({
+      ...prev,
+      status: 'idle',
+      selectedCell: null,
+    }));
+  }, []);
+
   return {
     ...state,
     startGame,
+    goHome,
     selectCell,
     inputNumber,
     eraseCell,
