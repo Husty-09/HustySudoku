@@ -47,8 +47,67 @@ export function useSudoku() {
     });
   }, []);
 
+  const selectCell = useCallback((row: number, col: number) => {
+    setState((prev) => {
+      const selectedValue = prev.grid[row][col].value;
+      const newGrid = prev.grid.map((r, ri) =>
+        r.map((c, ci) => ({
+          ...c,
+          isHighlighted:
+            selectedValue !== null &&
+            c.value === selectedValue &&
+            !(ri === row && ci === col),
+        }))
+      );
+      return { ...prev, grid: newGrid, selectedCell: { row, col } };
+    });
+  }, []);
+
+  const inputNumber = useCallback((num: number) => {
+    setState((prev) => {
+      if (!prev.selectedCell || prev.status !== 'playing') return prev;
+      const { row, col } = prev.selectedCell;
+      if (prev.grid[row][col].isFixed) return prev;
+
+      const correctValue = parseInt(prev.solution[row * 9 + col], 10);
+      const isError = num !== correctValue;
+
+      const newGrid = prev.grid.map((r, ri) =>
+        r.map((c, ci) =>
+          ri === row && ci === col ? { ...c, value: num, isError } : c
+        )
+      );
+
+      const won = newGrid.every((r) => r.every((c) => c.value !== null && !c.isError));
+
+      return {
+        ...prev,
+        grid: newGrid,
+        mistakes: isError ? prev.mistakes + 1 : prev.mistakes,
+        status: won ? 'won' : 'playing',
+      };
+    });
+  }, []);
+
+  const eraseCell = useCallback(() => {
+    setState((prev) => {
+      if (!prev.selectedCell || prev.status !== 'playing') return prev;
+      const { row, col } = prev.selectedCell;
+      if (prev.grid[row][col].isFixed) return prev;
+      const newGrid = prev.grid.map((r, ri) =>
+        r.map((c, ci) =>
+          ri === row && ci === col ? { ...c, value: null, isError: false } : c
+        )
+      );
+      return { ...prev, grid: newGrid };
+    });
+  }, []);
+
   return {
     ...state,
     startGame,
+    selectCell,
+    inputNumber,
+    eraseCell,
   };
 }
