@@ -12,6 +12,6 @@ export interface SudokuGame {
 }
 
 export type Difficulty = 'easy' | 'medium' | 'hard';
-export type GameStatus = 'idle' | 'playing' | 'won';
+export type GameStatus = 'idle' | 'playing' | 'won' | 'lost';
 
 export type SudokuGrid = SudokuCell[][];

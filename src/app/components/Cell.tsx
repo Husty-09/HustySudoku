@@ -11,48 +11,40 @@ interface CellProps {
   onSelect: (row: number, col: number) => void;
 }
 
-function getBorderClasses(row: number, col: number): string {
-  const classes: string[] = [];
-  if (row % 3 === 0) classes.push('border-t-2 border-t-gray-700');
-  if (col % 3 === 0) classes.push('border-l-2 border-l-gray-700');
-  if (row === 8) classes.push('border-b-2 border-b-gray-700');
-  if (col === 8) classes.push('border-r-2 border-r-gray-700');
-  return classes.join(' ');
+function getBlockBorder(row: number, col: number): string {
+  const t = row % 3 === 0 ? 'border-t-[2px] border-t-white/20' : '';
+  const l = col % 3 === 0 ? 'border-l-[2px] border-l-white/20' : '';
+  const b = row === 8    ? 'border-b-[2px] border-b-white/20' : '';
+  const r = col === 8    ? 'border-r-[2px] border-r-white/20' : '';
+  return [t, l, b, r].filter(Boolean).join(' ');
 }
 
-export function Cell({
-  value,
-  isFixed,
-  isError,
-  isHighlighted,
-  isSelected,
-  row,
-  col,
-  onSelect,
-}: CellProps) {
-  function getBg(): string {
-    if (isSelected) return 'bg-blue-400';
-    if (isError) return 'bg-red-200';
-    if (isHighlighted) return 'bg-blue-100';
-    return 'bg-white';
-  }
+export function Cell({ value, isFixed, isError, isHighlighted, isSelected, row, col, onSelect }: CellProps) {
+  let bg = 'bg-transparent';
+  let textColor = isFixed ? 'text-white/90' : 'text-[#07b6d5]';
+  let extra = '';
 
-  function getTextColor(): string {
-    if (isError) return 'text-red-600';
-    if (isFixed) return 'text-gray-900';
-    return 'text-blue-600';
+  if (isSelected) {
+    bg = 'bg-[rgba(7,182,213,0.2)]';
+    extra = 'animate-glow';
+  } else if (isError) {
+    bg = 'bg-[rgba(239,68,68,0.2)]';
+    textColor = 'text-red-400';
+    extra = 'animate-shake';
+  } else if (isHighlighted) {
+    bg = 'bg-[rgba(7,182,213,0.07)]';
   }
 
   return (
     <button
       onClick={() => onSelect(row, col)}
       className={`
-        w-10 h-10 flex items-center justify-center
-        text-base font-semibold border border-gray-300
-        transition-colors duration-100 active:scale-95
-        ${getBorderClasses(row, col)}
-        ${getBg()}
-        ${getTextColor()}
+        w-10 h-10 sm:w-11 sm:h-11 flex items-center justify-center
+        text-sm sm:text-base font-bold
+        border border-white/5
+        transition-all duration-150 active:scale-90
+        ${getBlockBorder(row, col)}
+        ${bg} ${textColor} ${extra}
       `}
     >
       {value ?? ''}

@@ -12,20 +12,19 @@ function formatTime(seconds: number): string {
   return `${m}:${s}`;
 }
 
+// Este componente recebe uma `key` externa (gameId).
+// Quando a key muda, o React desmonta e remonta o componente,
+// resetando o state para 0 automaticamente — sem precisar de
+// setState dentro do useEffect (que causaria o erro de lint).
 export function Timer({ status }: TimerProps) {
   const [seconds, setSeconds] = useState(0);
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   useEffect(() => {
     if (status === 'playing') {
-      setSeconds(0);
       intervalRef.current = setInterval(() => {
         setSeconds((prev) => prev + 1);
       }, 1000);
-    }
-
-    if (status === 'won' || status === 'idle') {
-      if (intervalRef.current) clearInterval(intervalRef.current);
     }
 
     return () => {
@@ -34,7 +33,9 @@ export function Timer({ status }: TimerProps) {
   }, [status]);
 
   return (
-    <div className="text-2xl font-mono font-bold text-gray-700 tracking-widest">
+    <div className="text-2xl font-mono font-bold tracking-widest"
+      style={{ color: '#07b6d5' }}
+    >
       {formatTime(seconds)}
     </div>
   );

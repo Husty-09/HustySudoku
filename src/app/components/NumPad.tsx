@@ -7,32 +7,36 @@ interface NumPadProps {
 
 export function NumPad({ onInput, onErase }: NumPadProps) {
   return (
-    <div className="flex flex-col items-center gap-2 w-full max-w-xs">
+    <div className="animate-slide-up flex flex-col items-center gap-3 w-full max-w-xs">
       <div className="grid grid-cols-3 gap-2 w-full">
         {[1, 2, 3, 4, 5, 6, 7, 8, 9].map((num) => (
           <button
             key={num}
             onClick={() => onInput(num)}
             className="
-              h-14 text-xl font-bold bg-white text-gray-800
-              rounded-2xl shadow border border-gray-200
-              active:scale-95 active:bg-gray-100
-              transition-all duration-100
+              h-14 text-xl font-bold rounded-2xl
+              border border-white/10
+              text-white/90
+              transition-all duration-150
+              active:scale-90
             "
+            style={{ background: 'rgba(255,255,255,0.06)' }}
+            onMouseEnter={e => (e.currentTarget.style.background = 'rgba(7,182,213,0.15)')}
+            onMouseLeave={e => (e.currentTarget.style.background = 'rgba(255,255,255,0.06)')}
           >
             {num}
           </button>
         ))}
       </div>
+
       <button
         onClick={onErase}
         className="
-          w-full h-12 text-sm font-semibold
-          bg-red-100 text-red-600 rounded-2xl shadow
-          border border-red-200
-          active:scale-95 active:bg-red-200
-          transition-all duration-100
+          w-full h-12 text-sm font-semibold rounded-2xl
+          border border-red-500/30 text-red-400
+          transition-all duration-150 active:scale-95
         "
+        style={{ background: 'rgba(239,68,68,0.1)' }}
       >
         ✕ Apagar
       </button>

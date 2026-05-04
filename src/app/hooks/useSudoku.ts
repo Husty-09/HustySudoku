@@ -33,18 +33,20 @@ export function useSudoku() {
     difficulty: 'easy' as Difficulty,
     status: 'idle' as GameStatus,
     mistakes: 0,
+    gameId: 0, // incrementado a cada novo jogo para resetar o Timer via key
   });
 
   const startGame = useCallback((difficulty: Difficulty) => {
     const { puzzle, solution } = getSudoku(difficulty);
-    setState({
+    setState((prev) => ({
       grid: parseGrid(puzzle),
       solution,
       selectedCell: null,
       difficulty,
       status: 'playing',
       mistakes: 0,
-    });
+      gameId: prev.gameId + 1,
+    }));
   }, []);
 
   const selectCell = useCallback((row: number, col: number) => {
@@ -78,13 +80,15 @@ export function useSudoku() {
         )
       );
 
-      const won = newGrid.every((r) => r.every((c) => c.value !== null && !c.isError));
+      const newMistakes = isError ? prev.mistakes + 1 : prev.mistakes;
+      const lost = newMistakes >= 3;
+      const won = !lost && newGrid.every((r) => r.every((c) => c.value !== null && !c.isError));
 
       return {
         ...prev,
         grid: newGrid,
-        mistakes: isError ? prev.mistakes + 1 : prev.mistakes,
-        status: won ? 'won' : 'playing',
+        mistakes: newMistakes,
+        status: lost ? 'lost' : won ? 'won' : 'playing',
       };
     });
   }, []);
