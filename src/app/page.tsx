@@ -16,7 +16,7 @@ const MAX_MISTAKES = 3;
 export default function SudokuPage() {
   const {
     grid, status, difficulty, mistakes, selectedCell, gameId,
-    startGame, selectCell, inputNumber, eraseCell,
+    startGame, selectCell, inputNumber, eraseCell, goHome,
   } = useSudoku();
 
   const isPlaying = status === 'playing';
@@ -71,20 +71,47 @@ export default function SudokuPage() {
       {/* Jogo ativo */}
       {isActive && (
         <>
-          {/* HUD: timer + erros */}
-          <div className="flex items-center gap-6 animate-fade-in">
-            <Timer key={gameId} status={status} />
+          {/* Barra superior: home + timer + erros + reiniciar */}
+          <div className="flex items-center gap-4 w-full max-w-sm animate-fade-in">
+            {/* Botão Home */}
+            <button
+              onClick={goHome}
+              className="flex items-center justify-center w-9 h-9 rounded-xl border border-white/10 transition-all active:scale-90"
+              style={{ background: 'rgba(255,255,255,0.05)' }}
+              title="Voltar ao início"
+            >
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src="/favicon-32x32.png" alt="Home" className="w-5 h-5" />
+            </button>
+
+            {/* Timer */}
+            <div className="flex-1 flex justify-center">
+              <Timer key={gameId} status={status} />
+            </div>
 
             {/* Corações de vida */}
             <div className="flex gap-1">
               {Array.from({ length: MAX_MISTAKES }).map((_, i) => (
-                <span key={i} className="text-xl transition-all duration-300"
+                <span key={i} className="text-lg transition-all duration-300"
                   style={{ filter: i < mistakes ? 'grayscale(1) opacity(0.3)' : 'none' }}
                 >
                   ❤️
                 </span>
               ))}
             </div>
+
+            {/* Botão Reiniciar */}
+            <button
+              onClick={() => startGame(difficulty)}
+              className="flex items-center justify-center w-9 h-9 rounded-xl border border-white/10 transition-all active:scale-90"
+              style={{ background: 'rgba(255,255,255,0.05)' }}
+              title="Reiniciar jogo"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.7)" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8" />
+                <path d="M3 3v5h5" />
+              </svg>
+            </button>
           </div>
 
           {/* Tabuleiro */}
@@ -102,13 +129,22 @@ export default function SudokuPage() {
               <p className="text-2xl font-black text-white">
                 Você <span style={{ color: '#10b77f' }}>venceu!</span>
               </p>
-              <button
-                onClick={() => startGame(difficulty)}
-                className="px-8 py-3 rounded-2xl font-bold text-black transition-all active:scale-95"
-                style={{ background: '#10b77f' }}
-              >
-                Jogar novamente
-              </button>
+              <p className="text-white/40 text-sm">Escolha a próxima dificuldade</p>
+              <div className="flex gap-2">
+                {DIFFICULTIES.map((d) => (
+                  <button
+                    key={d.value}
+                    onClick={() => startGame(d.value)}
+                    className="px-5 py-2.5 rounded-2xl text-sm font-semibold border transition-all duration-200 active:scale-95"
+                    style={d.value === difficulty
+                      ? { background: 'rgba(16,183,127,0.25)', borderColor: '#10b77f', color: '#10b77f' }
+                      : { background: 'rgba(255,255,255,0.05)', borderColor: 'rgba(255,255,255,0.1)', color: 'rgba(255,255,255,0.7)' }
+                    }
+                  >
+                    {d.label}
+                  </button>
+                ))}
+              </div>
             </div>
           )}
 
@@ -119,14 +155,22 @@ export default function SudokuPage() {
               <p className="text-2xl font-black text-white">
                 Game <span className="text-red-400">Over</span>
               </p>
-              <p className="text-white/40 text-sm">3 erros — tente novamente</p>
-              <button
-                onClick={() => startGame(difficulty)}
-                className="px-8 py-3 rounded-2xl font-bold text-white transition-all active:scale-95 border border-red-500/40"
-                style={{ background: 'rgba(239,68,68,0.2)' }}
-              >
-                Tentar novamente
-              </button>
+              <p className="text-white/40 text-sm">3 erros — escolha a dificuldade</p>
+              <div className="flex gap-2">
+                {DIFFICULTIES.map((d) => (
+                  <button
+                    key={d.value}
+                    onClick={() => startGame(d.value)}
+                    className="px-5 py-2.5 rounded-2xl text-sm font-semibold border transition-all duration-200 active:scale-95"
+                    style={d.value === difficulty
+                      ? { background: 'rgba(239,68,68,0.25)', borderColor: 'rgba(239,68,68,0.6)', color: '#f87171' }
+                      : { background: 'rgba(255,255,255,0.05)', borderColor: 'rgba(255,255,255,0.1)', color: 'rgba(255,255,255,0.7)' }
+                    }
+                  >
+                    {d.label}
+                  </button>
+                ))}
+              </div>
             </div>
           )}
         </>

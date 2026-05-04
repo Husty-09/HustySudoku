@@ -22,6 +22,7 @@ export function Board({ grid, selectedCell, onSelectCell }: BoardProps) {
               isFixed={cell.isFixed}
               isError={cell.isError}
               isHighlighted={cell.isHighlighted}
+              isInRowOrCol={cell.isInRowOrCol}
               isSelected={
                 selectedCell !== null &&
                 selectedCell.row === rowIndex &&
