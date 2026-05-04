@@ -1,6 +1,6 @@
 # 🧩 HustySudoku | Mobile PWA
 
-> Um jogo de Sudoku minimalista, focado em performance e experiência nativa para iOS — sem precisar baixar nada pela App Store.
+> Um jogo de Sudoku, focado em performance e experiência nativa para iOS — sem precisar baixar nada pela App Store.
 
 ---
 
