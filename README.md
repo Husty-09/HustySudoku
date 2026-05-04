@@ -1,36 +1,71 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# 🧩 HustySudoku | Mobile PWA
 
-## Getting Started
+> Um jogo de Sudoku, focado em performance e experiência nativa para iOS — sem precisar baixar nada pela App Store.
 
-First, run the development server:
+---
+
+## 🚀 O Projeto
+
+O **HustySudoku** nasceu da vontade de criar uma ferramenta de lazer pessoal que fosse rápida, visualmente agradável e que funcionasse como um aplicativo nativo no celular. O foco principal foi o uso de bordas arredondadas (estética **HustyCore**) e uma interatividade fluida através de animações suaves.
+
+---
+
+## 🛠️ Stack Técnica
+
+| Camada | Tecnologia |
+|---|---|
+| Framework | Next.js 15 (App Router) |
+| Linguagem | TypeScript |
+| Estilização | Tailwind CSS (Padrão HustyCore) |
+| Animações | Framer Motion |
+| Lógica de Puzzle | `sudoku-gen` |
+| Distribuição | PWA otimizado para iOS |
+
+---
+
+## 🎯 Funcionalidades Principais
+
+- **Interatividade Funcional** — Sistema de seleção de células e teclado numérico customizado para evitar o teclado nativo do iOS.
+- **Níveis de Dificuldade** — Geração dinâmica de puzzles: Fácil, Médio e Difícil.
+- **Cronômetro em Tempo Real** — Acompanhamento de performance por rodada.
+- **Feedback Visual** — Indicação de números errados, destaques de números iguais e validação de quadrantes.
+- **PWA Setup** — Configurado para ser adicionado à tela de início com ícone customizado e modo standalone (sem barras de navegação do browser).
+
+---
+
+## 📱 Instalação no iOS
+
+Para rodar o HustySudoku como um aplicativo no seu iPhone:
+
+1. Acesse a URL do projeto via **Safari**.
+2. Toque no ícone de **Compartilhar** (⬆️).
+3. Selecione **"Adicionar à Tela de Início"**.
+4. O HustySudoku aparecerá na sua biblioteca de apps com ícone e splash screen dedicados.
+
+---
+
+## 🖥️ Rodando Localmente
 
 ```bash
+# Instale as dependências
+npm install
+
+# Inicie o servidor de desenvolvimento
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Acesse [http://localhost:3000](http://localhost:3000) no navegador.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+---
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## 📐 Conceitos de Design (HustyCore)
 
-## Learn More
+O projeto segue a filosofia visual do **HustyCore**:
 
-To learn more about Next.js, take a look at the following resources:
+- **Bordas Arredondadas** — Uso extensivo de `rounded-2xl` e `rounded-3xl` para um visual moderno e suave.
+- **Dark Mode Nativo** — Paleta de cores focada em contraste confortável para longas sessões de jogo.
+- **Responsividade Touch** — Elementos dimensionados especificamente para a anatomia do polegar em dispositivos móveis.
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+---
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+<p align="center">Feito com 🎮 por <strong>Husty</strong></p>
