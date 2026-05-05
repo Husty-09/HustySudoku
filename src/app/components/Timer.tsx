@@ -1,9 +1,10 @@
 'use client';
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect } from 'react';
 import { GameStatus } from '../types/sudoku';
 
 interface TimerProps {
   status: GameStatus;
+  isPaused: boolean;
 }
 
 function formatTime(seconds: number): string {
@@ -12,29 +13,19 @@ function formatTime(seconds: number): string {
   return `${m}:${s}`;
 }
 
-// Este componente recebe uma `key` externa (gameId).
-// Quando a key muda, o React desmonta e remonta o componente,
-// resetando o state para 0 automaticamente — sem precisar de
-// setState dentro do useEffect (que causaria o erro de lint).
-export function Timer({ status }: TimerProps) {
+export function Timer({ status, isPaused }: TimerProps) {
   const [seconds, setSeconds] = useState(0);
-  const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   useEffect(() => {
-    if (status === 'playing') {
-      intervalRef.current = setInterval(() => {
-        setSeconds((prev) => prev + 1);
-      }, 1000);
-    }
-
-    return () => {
-      if (intervalRef.current) clearInterval(intervalRef.current);
-    };
-  }, [status]);
+    if (status !== 'playing' || isPaused) return;
+    const id = setInterval(() => setSeconds((s) => s + 1), 1000);
+    return () => clearInterval(id);
+  }, [status, isPaused]);
 
   return (
-    <div className="text-2xl font-mono font-bold tracking-widest"
-      style={{ color: '#07b6d5' }}
+    <div
+      className="text-2xl font-mono font-bold tracking-widest"
+      style={{ color: isPaused ? 'rgba(var(--fg-rgb), 0.3)' : 'var(--accent)' }}
     >
       {formatTime(seconds)}
     </div>
