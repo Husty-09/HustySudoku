@@ -1,5 +1,5 @@
 'use client';
-import { useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { useSudoku } from './hooks/useSudoku';
 import { useStats } from './hooks/useStats';
 import { useTheme } from './hooks/useTheme';
@@ -9,6 +9,7 @@ import { Timer } from './components/Timer';
 import { StatsModal } from './components/StatsModal';
 import { getTodayString } from './utils/dailyPuzzle';
 import { Difficulty } from './types/sudoku';
+import { useSounds } from './hooks/useSounds';
 
 const DIFFICULTIES: { label: string; value: Difficulty }[] = [
   { label: 'Fácil',   value: 'easy'   },
@@ -30,6 +31,7 @@ export default function SudokuPage() {
 
   const { stats, recordWin, recordLoss, recordDailyWin, isDailyDone, resetStats } = useStats();
   const { theme, setTheme } = useTheme();
+  const sounds = useSounds();
   const [showStats, setShowStats] = useState(false);
   const [mounted, setMounted] = useState(false);
 
@@ -39,9 +41,11 @@ export default function SudokuPage() {
   }, []);
 
   const dailyDone = isDailyDone(TODAY, 'medium');
-  const prevStatusRef = useRef(status);
+  const prevStatusRef       = useRef(status);
+  const prevMistakesRef     = useRef(mistakes);
+  const prevCorrectCountRef = useRef(0);
 
-  /* ── Grava estatísticas no fim de jogo ──────────── */
+  /* ── Grava estatísticas + sons de fim de jogo ───── */
   useEffect(() => {
     const prev = prevStatusRef.current;
     if (prev === 'playing') {
@@ -49,12 +53,28 @@ export default function SudokuPage() {
       if (status === 'won') {
         if (isDaily) recordDailyWin(TODAY, difficulty, elapsed);
         else recordWin(difficulty, elapsed);
+        sounds.playWin();
       } else if (status === 'lost') {
         recordLoss(difficulty);
+        sounds.playLose();
       }
     }
     prevStatusRef.current = status;
   }, [status]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  /* ── Som de erro (detecta incremento de mistakes) ─ */
+  useEffect(() => {
+    if (mistakes > prevMistakesRef.current) sounds.playError();
+    prevMistakesRef.current = mistakes;
+  }, [mistakes]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  /* ── Som de acerto (detecta células isCorrect) ──── */
+  useEffect(() => {
+    if (status !== 'playing') return;
+    const count = grid.flat().filter(c => c.isCorrect).length;
+    if (count > prevCorrectCountRef.current) sounds.playCorrect();
+    prevCorrectCountRef.current = count;
+  }, [grid]); // eslint-disable-line react-hooks/exhaustive-deps
 
   /* ── Pause automático ao sair da tela ───────────── */
   useEffect(() => {
@@ -66,12 +86,28 @@ export default function SudokuPage() {
   const isPlaying = status === 'playing';
   const isActive  = status === 'playing' || status === 'won' || status === 'lost';
 
+  /* ── Handlers com som ───────────────────────────── */
+  const handleSelectCell = useCallback((row: number, col: number) => {
+    sounds.playSelect();
+    selectCell(row, col);
+  }, [selectCell, sounds.playSelect]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  const handleErase = useCallback(() => {
+    sounds.playErase();
+    eraseCell();
+  }, [eraseCell, sounds.playErase]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  const handleToggleNotes = useCallback(() => {
+    sounds.playNotes();
+    toggleNotesMode();
+  }, [toggleNotesMode, sounds.playNotes]); // eslint-disable-line react-hooks/exhaustive-deps
+
   /* ══════════════════════════════════════════════════
      TELA INICIAL
   ══════════════════════════════════════════════════ */
   if (!isActive) {
     return (
-      <main className="select-none h-dvh flex flex-col items-center justify-center gap-5 px-6 relative">
+      <main className="select-none h-dvh flex flex-col items-center justify-center gap-5 px-6 relative max-w-[430px] mx-auto w-full">
 
         {/* Botão de tema — canto superior direito */}
         {mounted && (
@@ -187,7 +223,7 @@ export default function SudokuPage() {
      JOGO ATIVO
   ══════════════════════════════════════════════════ */
   return (
-    <main className="select-none h-dvh flex flex-col overflow-hidden">
+    <main className="select-none h-dvh flex flex-col overflow-hidden max-w-[430px] mx-auto w-full">
 
       {/* ── TOP BAR ──────────────────────────────────── */}
       <div className="shrink-0 flex items-center gap-3 px-3 pt-3 pb-1 animate-fade-in">
@@ -223,6 +259,30 @@ export default function SudokuPage() {
             ))}
           </div>
         )}
+
+        {/* Som */}
+        <button
+          onClick={sounds.toggleSound}
+          title={sounds.enabled ? 'Desativar som' : 'Ativar som'}
+          className="flex items-center justify-center w-11 h-11 rounded-2xl border border-white/10 transition-all active:scale-90"
+          style={{ background: 'rgba(var(--fg-rgb),0.05)' }}
+        >
+          {sounds.enabled ? (
+            <svg xmlns="http://www.w3.org/2000/svg" width="17" height="17" viewBox="0 0 24 24"
+              fill="none" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"
+              style={{ stroke: 'rgba(var(--fg-rgb),0.65)' }}>
+              <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/>
+              <path d="M15.54 8.46a5 5 0 0 1 0 7.07"/>
+            </svg>
+          ) : (
+            <svg xmlns="http://www.w3.org/2000/svg" width="17" height="17" viewBox="0 0 24 24"
+              fill="none" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"
+              style={{ stroke: 'rgba(var(--fg-rgb),0.30)' }}>
+              <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/>
+              <line x1="23" y1="9" x2="17" y2="15"/><line x1="17" y1="9" x2="23" y2="15"/>
+            </svg>
+          )}
+        </button>
 
         {/* Pause */}
         {isPlaying && (
@@ -265,7 +325,7 @@ export default function SudokuPage() {
           <Board
             grid={grid}
             selectedCell={isPaused ? null : selectedCell}
-            onSelectCell={selectCell}
+            onSelectCell={handleSelectCell}
             isWon={status === 'won'}
           />
         </div>
@@ -295,9 +355,9 @@ export default function SudokuPage() {
             <div className="flex justify-center w-full">
               <NumPad
                 onInput={inputNumber}
-                onErase={eraseCell}
+                onErase={handleErase}
                 isNotesMode={isNotesMode}
-                onToggleNotes={toggleNotesMode}
+                onToggleNotes={handleToggleNotes}
                 completedNumbers={completedNumbers}
               />
             </div>
