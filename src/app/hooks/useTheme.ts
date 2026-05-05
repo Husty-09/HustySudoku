@@ -12,8 +12,14 @@ export function useTheme() {
 
   // Lê o tema salvo depois da montagem
   useEffect(() => {
+    let rafId: number;
     const saved = localStorage.getItem(STORAGE_KEY) as Theme | null;
-    if (saved && saved !== 'dark') setThemeState(saved);
+    if (saved && saved !== 'dark') {
+      rafId = requestAnimationFrame(() => setThemeState(saved));
+    }
+    return () => {
+      if (rafId) cancelAnimationFrame(rafId);
+    };
   }, []);
 
   // Aplica data-theme no <html> e persiste
