@@ -14,20 +14,6 @@
   /* Foreground (branco no dark, preto no light) */
   --fg-rgb: 255, 255, 255;
 
-  /* Tabuleiro */
-  --board-bg: #111111;
-  --block-border: rgba(255, 255, 255, 0.28);
-  --inner-border: rgba(255, 255, 255, 0.07);
-
-  /* Cores de estado das celulas */
-  --cell-error-bg: rgba(239, 68, 68, 0.50);
-  --cell-correct-bg: rgba(16, 183, 127, 0.30);
-  --error-text: #fca5a5;
-
-  /* Overlay de pause */
-  --pause-overlay: rgba(0, 0, 0, 0.78);
-  --pause-text: rgba(255, 255, 255, 0.65);
-
   /* HustyCore vars legadas */
   --hc-bg: #0a0a0a;
   --hc-surface: rgba(255, 255, 255, 0.04);
@@ -51,20 +37,6 @@
   --card-bg: #ffffff;
   --grid-line: rgba(0, 0, 0, 0.04);
   --fg-rgb: 0, 0, 0;
-
-  /* Tabuleiro */
-  --board-bg: #ffffff;
-  --block-border: rgba(0, 0, 0, 0.25);
-  --inner-border: rgba(0, 0, 0, 0.07);
-
-  /* Cores de estado das celulas -- mais saturadas no claro */
-  --cell-error-bg: rgba(220, 38, 38, 0.55);
-  --cell-correct-bg: rgba(16, 183, 127, 0.45);
-  --error-text: #dc2626;
-
-  /* Overlay de pause */
-  --pause-overlay: rgba(255, 255, 255, 0.88);
-  --pause-text: rgba(0, 0, 0, 0.65);
 }
 
 /* ── Base ──────────────────────────────────────────── */
@@ -93,8 +65,8 @@ body {
 /* ── Animações ─────────────────────────────────────── */
 
 @keyframes fade-in {
-  from { opacity: 0; }
-  to   { opacity: 1; }
+  from { opacity: 0; transform: translateY(12px); }
+  to   { opacity: 1; transform: translateY(0); }
 }
 
 @keyframes scale-in {
@@ -125,7 +97,7 @@ body {
 }
 
 @keyframes slide-up {
-  from { opacity: 0; transform: translateY(8px); }
+  from { opacity: 0; transform: translateY(30px); }
   to   { opacity: 1; transform: translateY(0); }
 }
 

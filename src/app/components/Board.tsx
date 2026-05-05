@@ -14,9 +14,9 @@ export function Board({ grid, selectedCell, onSelectCell, isWon }: BoardProps) {
     <div
       className="animate-fade-in w-full rounded-3xl overflow-hidden shadow-2xl"
       style={{
-        border: '1px solid rgba(var(--fg-rgb), 0.1)',
-        background: 'rgba(var(--fg-rgb), 0.04)',
-        boxShadow: '0 0 40px rgba(var(--accent-rgb), 0.08)',
+        border: '2px solid rgba(var(--fg-rgb), 0.18)',
+        background: 'var(--board-bg)',
+        boxShadow: '0 0 40px rgba(var(--accent-rgb), 0.10)',
       }}
     >
       <div className="grid grid-cols-9">
