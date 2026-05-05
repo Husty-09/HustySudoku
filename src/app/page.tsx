@@ -31,6 +31,13 @@ export default function SudokuPage() {
   const { stats, recordWin, recordLoss, recordDailyWin, isDailyDone, resetStats } = useStats();
   const { theme, setTheme } = useTheme();
   const [showStats, setShowStats] = useState(false);
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    const rafId = requestAnimationFrame(() => setMounted(true));
+    return () => cancelAnimationFrame(rafId);
+  }, []);
+
   const dailyDone = isDailyDone(TODAY, 'medium');
   const prevStatusRef = useRef(status);
 
@@ -67,6 +74,7 @@ export default function SudokuPage() {
       <main className="select-none h-dvh flex flex-col items-center justify-center gap-5 px-6 relative">
 
         {/* Botão de tema — canto superior direito */}
+        {mounted && (
         <button
           onClick={() => setTheme(theme === 'light' ? 'dark' : 'light')}
           title={theme === 'light' ? 'Modo escuro' : 'Modo claro'}
@@ -100,6 +108,7 @@ export default function SudokuPage() {
             </svg>
           )}
         </button>
+        )}
 
         {/* Logo */}
         <div className="flex flex-col items-center gap-1 animate-fade-in">
