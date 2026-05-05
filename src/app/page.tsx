@@ -7,6 +7,7 @@ import { Board } from './components/Board';
 import { NumPad } from './components/NumPad';
 import { Timer } from './components/Timer';
 import { StatsModal } from './components/StatsModal';
+import { OnboardingModal } from './components/OnboardingModal';
 import { getTodayString } from './utils/dailyPuzzle';
 import { Difficulty } from './types/sudoku';
 import { useSounds } from './hooks/useSounds';
@@ -34,11 +35,22 @@ export default function SudokuPage() {
   const sounds = useSounds();
   const [showStats, setShowStats] = useState(false);
   const [mounted, setMounted] = useState(false);
+  const [showOnboarding, setShowOnboarding] = useState(false);
 
   useEffect(() => {
-    const rafId = requestAnimationFrame(() => setMounted(true));
+    const rafId = requestAnimationFrame(() => {
+      setMounted(true);
+      if (!localStorage.getItem('sudoku-onboarding-seen')) {
+        setShowOnboarding(true);
+      }
+    });
     return () => cancelAnimationFrame(rafId);
   }, []);
+
+  const handleCloseOnboarding = () => {
+    localStorage.setItem('sudoku-onboarding-seen', '1');
+    setShowOnboarding(false);
+  };
 
   const dailyDone = isDailyDone(TODAY, 'medium');
   const prevStatusRef       = useRef(status);
@@ -108,6 +120,21 @@ export default function SudokuPage() {
   if (!isActive) {
     return (
       <main className="select-none h-dvh flex flex-col items-center justify-center gap-5 px-6 relative max-w-[430px] mx-auto w-full">
+
+        {/* Botão de tutorial — canto superior esquerdo */}
+        <button
+          onClick={() => setShowOnboarding(true)}
+          className="absolute top-4 left-4 w-10 h-10 rounded-2xl border flex items-center justify-center transition-all active:scale-90 animate-fade-in"
+          style={{ background: 'rgba(var(--fg-rgb),0.05)', borderColor: 'rgba(var(--fg-rgb),0.1)' }}
+        >
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24"
+            fill="none" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"
+            style={{ stroke: 'rgba(var(--fg-rgb),0.55)' }}>
+            <circle cx="12" cy="12" r="10"/>
+            <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/>
+            <line x1="12" y1="17" x2="12.01" y2="17"/>
+          </svg>
+        </button>
 
         {/* Botão de tema — canto superior direito */}
         {mounted && (
@@ -214,6 +241,10 @@ export default function SudokuPage() {
 
         {showStats && (
           <StatsModal stats={stats} onClose={() => setShowStats(false)} onReset={resetStats} />
+        )}
+
+        {showOnboarding && (
+          <OnboardingModal onClose={handleCloseOnboarding} />
         )}
       </main>
     );
