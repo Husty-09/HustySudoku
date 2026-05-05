@@ -93,6 +93,7 @@ export function useSudoku() {
     isDaily:       false,
     autoCheck:     true,
     gameStartTime: 0,
+    pausedAt:      0,
   });
 
   const startGame = useCallback((difficulty: Difficulty, withAutoCheck = true) => {
@@ -113,6 +114,7 @@ export function useSudoku() {
       isDaily:       false,
       autoCheck:     withAutoCheck,
       gameStartTime: Date.now(),
+      pausedAt:      0,
     }));
   }, []);
 
@@ -133,20 +135,44 @@ export function useSudoku() {
       isDaily:       true,
       autoCheck:     true,
       gameStartTime: Date.now(),
+      pausedAt:      0,
     }));
   }, []);
 
   const setPaused = useCallback((value: boolean) => {
     setState((prev) => {
       if (prev.status !== 'playing') return prev;
-      return { ...prev, isPaused: value };
+      if (value === prev.isPaused) return prev;
+      if (value) {
+        // Pausando: registra momento da pausa
+        return { ...prev, isPaused: true, pausedAt: Date.now() };
+      }
+      // Retomando: avança gameStartTime pelo tempo que ficou pausado
+      const pausedDuration = prev.pausedAt ? Date.now() - prev.pausedAt : 0;
+      return {
+        ...prev,
+        isPaused: false,
+        pausedAt: 0,
+        gameStartTime: prev.gameStartTime + pausedDuration,
+      };
     });
   }, []);
 
   const togglePause = useCallback(() => {
     setState((prev) => {
       if (prev.status !== 'playing') return prev;
-      return { ...prev, isPaused: !prev.isPaused };
+      if (!prev.isPaused) {
+        // Pausando: registra momento da pausa
+        return { ...prev, isPaused: true, pausedAt: Date.now() };
+      }
+      // Retomando: avança gameStartTime pelo tempo que ficou pausado
+      const pausedDuration = prev.pausedAt ? Date.now() - prev.pausedAt : 0;
+      return {
+        ...prev,
+        isPaused: false,
+        pausedAt: 0,
+        gameStartTime: prev.gameStartTime + pausedDuration,
+      };
     });
   }, []);
 
