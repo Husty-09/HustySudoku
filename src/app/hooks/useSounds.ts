@@ -3,22 +3,18 @@
 import { useRef, useCallback, useState, useEffect } from 'react';
 
 export function useSounds() {
-  const ctxRef     = useRef<AudioContext | null>(null);
-  const enabledRef = useRef(true);
-  const [enabled, setEnabled] = useState(true);
+  const ctxRef = useRef<AudioContext | null>(null);
 
-  /* Sincroniza ref com state (evita closures stale nos callbacks) */
-  useEffect(() => { enabledRef.current = enabled; }, [enabled]);
-
-  /* Carrega preferência salva */
-  useEffect(() => {
+  /* Inicializa direto do localStorage — evita useEffect com setState */
+  const [enabled, setEnabled] = useState<boolean>(() => {
+    if (typeof window === 'undefined') return true;
     const saved = localStorage.getItem('sudoku-sound');
-    if (saved !== null) {
-      const val = saved === '1';
-      setEnabled(val);
-      enabledRef.current = val;
-    }
-  }, []);
+    return saved === null ? true : saved === '1';
+  });
+
+  /* Ref espelha o state para evitar closures stale nos callbacks de audio */
+  const enabledRef = useRef(enabled);
+  useEffect(() => { enabledRef.current = enabled; }, [enabled]);
 
   const toggleSound = useCallback(() => {
     setEnabled(prev => {
@@ -43,7 +39,7 @@ export function useSounds() {
     return ctxRef.current;
   }, []);
 
-  /* Oscilador básico: freq, duração, forma de onda, volume */
+  /* Oscilador basico: freq, duracao, forma de onda, volume */
   const tone = useCallback(
     (freq: number, dur: number, type: OscillatorType = 'sine', vol = 0.18) => {
       if (!enabledRef.current) return;
@@ -63,9 +59,9 @@ export function useSounds() {
     [getCtx]
   );
 
-  /* ── Sons individuais ──────────────────────────── */
+  /* Sons individuais */
 
-  /** Tick suave ao selecionar célula */
+  /** Tick suave ao selecionar celula */
   const playSelect = useCallback(() => tone(880, 0.03, 'sine', 0.06), [tone]);
 
   /** Apagar */
@@ -74,13 +70,13 @@ export function useSounds() {
   /** Toggle do modo rascunho */
   const playNotes = useCallback(() => tone(1100, 0.04, 'square', 0.06), [tone]);
 
-  /** Número correto — dois tons ascendentes */
+  /** Numero correto -- dois tons ascendentes */
   const playCorrect = useCallback(() => {
     tone(587, 0.10, 'sine', 0.14); // D5
     setTimeout(() => tone(740, 0.18, 'sine', 0.12), 100); // F#5
   }, [tone]);
 
-  /** Número errado — dois tons dissonantes simultâneos */
+  /** Numero errado -- dois tons dissonantes simultaneos */
   const playError = useCallback(() => {
     if (!enabledRef.current) return;
     const c = getCtx();
@@ -99,14 +95,14 @@ export function useSounds() {
     });
   }, [getCtx]);
 
-  /** Vitória — arpejo ascendente C5 E5 G5 C6 */
+  /** Vitoria -- arpejo ascendente C5 E5 G5 C6 */
   const playWin = useCallback(() => {
     [523, 659, 784, 1047].forEach((freq, i) =>
       setTimeout(() => tone(freq, 0.32, 'sine', 0.17), i * 130)
     );
   }, [tone]);
 
-  /** Derrota — queda triste de dois tons */
+  /** Derrota -- queda triste de dois tons */
   const playLose = useCallback(() => {
     tone(380, 0.22, 'sine', 0.14);
     setTimeout(() => tone(270, 0.40, 'sine', 0.14), 230);
