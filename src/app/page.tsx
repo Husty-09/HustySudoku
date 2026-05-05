@@ -187,7 +187,7 @@ export default function SudokuPage() {
      JOGO ATIVO
   ══════════════════════════════════════════════════ */
   return (
-    <main className="select-none h-dvh flex flex-col">
+    <main className="select-none h-dvh flex flex-col overflow-hidden">
 
       {/* ── TOP BAR ──────────────────────────────────── */}
       <div className="shrink-0 flex items-center gap-3 px-3 pt-3 pb-1 animate-fade-in">
@@ -260,7 +260,7 @@ export default function SudokuPage() {
       </div>
 
       {/* ── TABULEIRO ─────────────────────────────────── */}
-      <div className="flex-1 flex items-center justify-center px-3 min-h-0 py-2 relative">
+      <div className="flex-1 flex items-center justify-center px-3 min-h-0 py-2 relative isolate">
         <div style={{ width: 'min(100%, calc(100dvh - 272px))' }}>
           <Board
             grid={grid}
@@ -274,20 +274,20 @@ export default function SudokuPage() {
         {isPaused && (
           <div
             className="absolute inset-0 flex flex-col items-center justify-center gap-3 rounded-3xl cursor-pointer"
-            style={{ background: 'rgba(0,0,0,0.75)', backdropFilter: 'blur(8px)' }}
+            style={{ background: 'var(--pause-overlay)', backdropFilter: 'blur(10px)' }}
             onClick={togglePause}
           >
             <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24"
               stroke="none" style={{ fill: 'var(--accent)' }}>
               <polygon points="5 3 19 12 5 21 5 3"/>
             </svg>
-            <p className="text-white/60 text-sm font-semibold tracking-wide">Toque para continuar</p>
+            <p className="text-sm font-semibold tracking-wide" style={{ color: 'var(--pause-text)' }}>Toque para continuar</p>
           </div>
         )}
       </div>
 
       {/* ── SEÇÃO INFERIOR ───────────────────────────── */}
-      <div className="shrink-0 px-3 pb-6 pt-1">
+      <div className="shrink-0 px-3 pb-6 pt-1 overflow-hidden">
 
         {/* Teclado numérico */}
         {isPlaying && (

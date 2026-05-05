@@ -13,21 +13,34 @@ interface CellProps {
   isInBlock: boolean;
   isSelected: boolean;
   isWon: boolean;
-  winDelay: number;   // ms — delay na animação de cascata de vitória
+  winDelay: number;
   row: number;
   col: number;
   onSelect: (row: number, col: number) => void;
 }
 
-/** Bordas grossas 3×3, usando variável CSS para cor */
+/**
+ * Grade 9x9 completa usando apenas COR (nunca espessura) para evitar layout shift.
+ *
+ * Cada celula define somente borderTop e borderLeft.
+ * borderBottom/Right so aparecem na ultima linha/coluna (borda externa).
+ *
+ * Resultado visual:
+ *   - Linhas finas entre cada celula (--inner-border)
+ *   - Separadores 3x3 mais fortes (--block-border) em rows/cols 0, 3, 6
+ *   - Borda externa grossa (--block-border) em row 8 bottom e col 8 right
+ */
 function blockBorderStyle(row: number, col: number): CSSProperties {
-  const c = 'rgba(var(--fg-rgb), 0.22)';
-  const s: CSSProperties = {};
-  if (row % 3 === 0) { s.borderTopWidth    = '2px'; s.borderTopColor    = c; }
-  if (col % 3 === 0) { s.borderLeftWidth   = '2px'; s.borderLeftColor   = c; }
-  if (row === 8)     { s.borderBottomWidth = '2px'; s.borderBottomColor = c; }
-  if (col === 8)     { s.borderRightWidth  = '2px'; s.borderRightColor  = c; }
-  return s;
+  const block = '1px solid var(--block-border)';
+  const inner = '1px solid var(--inner-border)';
+  const none  = '1px solid transparent';
+
+  return {
+    borderTop:    row % 3 === 0 ? block : inner,
+    borderLeft:   col % 3 === 0 ? block : inner,
+    borderBottom: row === 8     ? block : none,
+    borderRight:  col === 8     ? block : none,
+  };
 }
 
 export function Cell({
@@ -38,24 +51,24 @@ export function Cell({
 
   const isAnimatingWin = isWon && value !== null;
 
-  /* ── Background ─────────────────────────────────── */
+  /* Background */
   let background = 'transparent';
   if (!isAnimatingWin) {
-    if (isError)           background = 'rgba(239,68,68,0.45)';
-    else if (isCorrect)    background = 'rgba(var(--accent-rgb), 0.3)';
-    else if (isSelected)   background = 'rgba(var(--accent-rgb), 0.22)';
+    if (isError)            background = 'var(--cell-error-bg)';
+    else if (isCorrect)     background = 'var(--cell-correct-bg)';
+    else if (isSelected)    background = 'rgba(var(--accent-rgb), 0.22)';
     else if (isHighlighted) background = 'rgba(var(--accent-rgb), 0.14)';
-    else if (isInBlock)    background = 'rgba(var(--fg-rgb), 0.05)';
-    else if (isInRowOrCol) background = 'rgba(var(--fg-rgb), 0.03)';
+    else if (isInBlock)     background = 'rgba(var(--fg-rgb), 0.05)';
+    else if (isInRowOrCol)  background = 'rgba(var(--fg-rgb), 0.03)';
   }
 
-  /* ── Cor do texto ───────────────────────────────── */
+  /* Cor do texto */
   let color: string;
-  if (isError)      color = '#fca5a5';
+  if (isError)      color = 'var(--error-text)';
   else if (isFixed) color = 'rgba(var(--fg-rgb), 0.9)';
   else              color = 'var(--accent)';
 
-  /* ── Classe de animação ─────────────────────────── */
+  /* Classe de animacao */
   let animClass = '';
   if (isAnimatingWin)    animClass = 'animate-win-cell';
   else if (isError)      animClass = 'animate-shake';
@@ -74,7 +87,6 @@ export function Cell({
         ${ringClass} ${animClass}
       `}
       style={{
-        border: '1px solid rgba(var(--fg-rgb), 0.06)',
         background,
         animationDelay: isAnimatingWin ? `${winDelay}ms` : undefined,
         ...blockBorderStyle(row, col),
@@ -82,7 +94,7 @@ export function Cell({
     >
       {/* Valor */}
       {value !== null && (
-        <span className="text-base font-bold" style={{ color }}>
+        <span style={{ fontSize: '1.15rem', fontWeight: 800, color, lineHeight: 1 }}>
           {value}
         </span>
       )}
@@ -95,11 +107,11 @@ export function Cell({
               key={n}
               className="flex items-center justify-center"
               style={{
-                fontSize: '8px',
-                fontWeight: 600,
+                fontSize: '9px',
+                fontWeight: 700,
                 lineHeight: 1,
                 color: notes.includes(n)
-                  ? 'rgba(var(--fg-rgb), 0.65)'
+                  ? 'rgba(var(--fg-rgb), 0.70)'
                   : 'transparent',
               }}
             >

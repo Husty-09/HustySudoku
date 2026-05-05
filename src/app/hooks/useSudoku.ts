@@ -6,6 +6,38 @@ import { getDailyPuzzle } from '../utils/dailyPuzzle';
 import { hapticError, hapticSuccess } from '../utils/haptics';
 import { SudokuGrid, Difficulty, GameStatus } from '../types/sudoku';
 
+/**
+ * Gera um puzzle mapeando dificuldade do jogo para a biblioteca:
+ *   easy   -> lib 'easy' + 12 celulas extras reveladas (bem mais facil)
+ *   medium -> lib 'easy' (equivale ao antigo easy)
+ *   hard   -> lib 'hard'
+ */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const _getSudoku = getSudoku as any;
+
+function generatePuzzle(difficulty: Difficulty): { puzzle: string; solution: string } {
+  if (difficulty === 'easy') {
+    const result = _getSudoku('easy');
+    const arr = result.puzzle.split('');
+    const empties: number[] = [];
+    for (let i = 0; i < 81; i++) {
+      if (arr[i] === '-') empties.push(i);
+    }
+    for (let i = empties.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [empties[i], empties[j]] = [empties[j], empties[i]];
+    }
+    for (const idx of empties.slice(0, 12)) {
+      arr[idx] = result.solution[idx];
+    }
+    return { puzzle: arr.join(''), solution: result.solution };
+  }
+  if (difficulty === 'medium') {
+    return _getSudoku('easy');
+  }
+  return _getSudoku(difficulty);
+}
+
 function parseGrid(puzzle: string): SudokuGrid {
   return Array.from({ length: 9 }, (_, row) =>
     Array.from({ length: 9 }, (_, col) => {
@@ -33,7 +65,6 @@ function sameBlock(row: number, col: number, r: number, c: number) {
 
 export function useSudoku() {
 
-  /* ── Estado do jogo ─────────────────────────────── */
   const [state, setState] = useState({
     grid: Array(9).fill(null).map(() =>
       Array(9).fill(null).map(() => ({
@@ -60,9 +91,8 @@ export function useSudoku() {
     gameStartTime: 0,
   });
 
-  /* ── Iniciar jogo normal ────────────────────────── */
   const startGame = useCallback((difficulty: Difficulty, withAutoCheck = true) => {
-    const { puzzle, solution } = getSudoku(difficulty);
+    const { puzzle, solution } = generatePuzzle(difficulty);
     setState((prev) => ({
       grid:          parseGrid(puzzle),
       solution,
@@ -79,7 +109,6 @@ export function useSudoku() {
     }));
   }, []);
 
-  /* ── Iniciar desafio diário ─────────────────────── */
   const startDailyGame = useCallback((difficulty: Difficulty) => {
     const { puzzle, solution } = getDailyPuzzle(difficulty);
     setState((prev) => ({
@@ -98,7 +127,6 @@ export function useSudoku() {
     }));
   }, []);
 
-  /* ── Pause ──────────────────────────────────────── */
   const setPaused = useCallback((value: boolean) => {
     setState((prev) => {
       if (prev.status !== 'playing') return prev;
@@ -113,7 +141,6 @@ export function useSudoku() {
     });
   }, []);
 
-  /* ── Selecionar célula ──────────────────────────── */
   const selectCell = useCallback((row: number, col: number) => {
     setState((prev) => {
       if (prev.isPaused) return prev;
@@ -133,12 +160,10 @@ export function useSudoku() {
     });
   }, []);
 
-  /* ── Toggle modo rascunho ───────────────────────── */
   const toggleNotesMode = useCallback(() => {
     setState((prev) => ({ ...prev, isNotesMode: !prev.isNotesMode }));
   }, []);
 
-  /* ── Inserir número ─────────────────────────────── */
   const inputNumber = useCallback((num: number) => {
     setState((prev) => {
       if (!prev.selectedCell || prev.status !== 'playing' || prev.isPaused) return prev;
@@ -165,7 +190,7 @@ export function useSudoku() {
 
       const correctValue = parseInt(prev.solution[row * 9 + col], 10);
 
-      /* ── Sem verificação automática ──────────────── */
+      /* Sem verificacao automatica */
       if (!prev.autoCheck) {
         const newGrid = prev.grid.map((r, ri) =>
           r.map((c, ci) =>
@@ -174,7 +199,6 @@ export function useSudoku() {
               : c
           )
         );
-        // Vitória: tabuleiro cheio e tudo correto
         const allFilled = newGrid.every((r) => r.every((c) => c.value !== null));
         if (allFilled) {
           const allCorrect = newGrid.every((r, ri) =>
@@ -191,14 +215,15 @@ export function useSudoku() {
         return { ...prev, grid: newGrid };
       }
 
-      /* ── Com verificação automática ─────────────── */
+      /* Com verificacao automatica */
       const isError = num !== correctValue;
       if (isError) hapticError(); else hapticSuccess();
 
       let newGrid = prev.grid.map((r, ri) =>
         r.map((c, ci) =>
           ri === row && ci === col
-            ? { ...c, value: num, isError, isCorrect: !isError, notes: [] }
+            // Se errou: mantem as notas para restaurar apos o flash
+            ? { ...c, value: num, isError, isCorrect: !isError, notes: isError ? c.notes : [] }
             : c
         )
       );
@@ -227,6 +252,7 @@ export function useSudoku() {
             grid: s.grid.map((r, ri) =>
               r.map((c, ci) =>
                 ri === row && ci === col && c.isError
+                  // Restaura: limpa o valor errado mas mantem as notas
                   ? { ...c, value: null, isError: false }
                   : c
               )
@@ -257,7 +283,6 @@ export function useSudoku() {
     });
   }, []);
 
-  /* ── Verificação manual (sem auto-check) ────────── */
   const checkBoard = useCallback(() => {
     setState((prev) => {
       if (prev.status !== 'playing') return prev;
@@ -277,7 +302,6 @@ export function useSudoku() {
     });
   }, []);
 
-  /* ── Apagar célula ──────────────────────────────── */
   const eraseCell = useCallback(() => {
     setState((prev) => {
       if (!prev.selectedCell || prev.status !== 'playing') return prev;
@@ -296,19 +320,16 @@ export function useSudoku() {
     });
   }, []);
 
-  /* ── Ir para home ───────────────────────────────── */
   const goHome = useCallback(() => {
     setState((prev) => ({ ...prev, status: 'idle', selectedCell: null, isPaused: false }));
   }, []);
 
-  /* ── Números completos ──────────────────────────── */
   const completedNumbers = new Set<number>();
   for (let n = 1; n <= 9; n++) {
     const count = state.grid.flat().filter((c) => c.value === n && !c.isError).length;
     if (count === 9) completedNumbers.add(n);
   }
 
-  /* ── Tabuleiro cheio (para hint de verificar) ───── */
   const isBoardFull = state.grid.every((r) => r.every((c) => c.value !== null));
 
   return {
