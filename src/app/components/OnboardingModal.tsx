@@ -181,7 +181,7 @@ export function OnboardingModal({ onClose }: Props) {
 
           <button
             onClick={() => isLast ? onClose() : setSlide(s => s + 1)}
-            className="flex-[2] py-3 rounded-2xl text-sm font-bold transition-all active:scale-95"
+            className="flex-2 py-3 rounded-2xl text-sm font-bold transition-all active:scale-95"
             style={{ background: 'var(--accent)', color: 'white', border: 'none' }}
           >
             {isLast ? 'Começar a jogar' : 'Próximo →'}
