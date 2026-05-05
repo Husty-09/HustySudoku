@@ -69,17 +69,17 @@ const SLIDES = [
         {/* 3 coracoes, 1 apagado */}
         {[0,1,2].map(i => (
           <path key={i}
-            transform={`translate(${8 + i * 22}, 20)`}
+            transform={`translate(${8 + i * 22}, 16)`}
             d="M10 6C10 3.8 8.2 2 6 2S2 3.8 2 6c0 1.2.5 2.3 1.4 3.1L10 16l6.6-6.9C17.5 8.3 18 7.2 18 6c0-2.2-1.8-4-4-4S10 3.8 10 6z"
             fill={i < 2 ? '#ef4444' : 'rgba(255,255,255,0.12)'}
           />
         ))}
         {/* Numero errado abaixo */}
-        <rect x="26" y="44" width="20" height="20" rx="5"
+        <rect x="26" y="46" width="20" height="20" rx="5"
           fill="rgba(239,68,68,0.2)" stroke="rgba(239,68,68,0.5)" strokeWidth="1"/>
-        <text x="36" y="57" textAnchor="middle" fontSize="11" fontWeight="800"
+        <text x="36" y="59" textAnchor="middle" fontSize="11" fontWeight="800"
           fill="rgba(239,68,68,0.9)">7</text>
-        <text x="36" y="39" textAnchor="middle" fontSize="8" fontWeight="600"
+        <text x="36" y="42" textAnchor="middle" fontSize="8" fontWeight="600"
           fill="rgba(255,255,255,0.35)">errado</text>
       </svg>
     ),
