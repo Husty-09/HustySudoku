@@ -1,5 +1,6 @@
 'use client';
 
+import { memo } from 'react';
 import type { CSSProperties } from 'react';
 
 interface CellProps {
@@ -43,7 +44,7 @@ function blockBorderStyle(row: number, col: number): CSSProperties {
   };
 }
 
-export function Cell({
+export const Cell = memo(function Cell({
   value, notes, isFixed, isError, isCorrect,
   isHighlighted, isInRowOrCol, isInBlock,
   isSelected, isWon, winDelay, row, col, onSelect,
@@ -122,4 +123,4 @@ export function Cell({
       )}
     </button>
   );
-}
+});

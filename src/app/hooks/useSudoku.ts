@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useMemo, useRef } from 'react';
 import { getSudoku } from 'sudoku-gen';
 import { getDailyPuzzle } from '../utils/dailyPuzzle';
 import { hapticError, hapticSuccess } from '../utils/haptics';
@@ -65,6 +65,10 @@ function sameBlock(row: number, col: number, r: number, c: number) {
 
 export function useSudoku() {
 
+  /* Refs para cleanup de timers (evita memory leak / stale state) */
+  const errorTimerRef   = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const correctTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
   const [state, setState] = useState({
     grid: Array(9).fill(null).map(() =>
       Array(9).fill(null).map(() => ({
@@ -92,6 +96,9 @@ export function useSudoku() {
   });
 
   const startGame = useCallback((difficulty: Difficulty, withAutoCheck = true) => {
+    /* Cancela timers pendentes ao iniciar novo jogo */
+    if (errorTimerRef.current)   clearTimeout(errorTimerRef.current);
+    if (correctTimerRef.current) clearTimeout(correctTimerRef.current);
     const { puzzle, solution } = generatePuzzle(difficulty);
     setState((prev) => ({
       grid:          parseGrid(puzzle),
@@ -110,6 +117,8 @@ export function useSudoku() {
   }, []);
 
   const startDailyGame = useCallback((difficulty: Difficulty) => {
+    if (errorTimerRef.current)   clearTimeout(errorTimerRef.current);
+    if (correctTimerRef.current) clearTimeout(correctTimerRef.current);
     const { puzzle, solution } = getDailyPuzzle(difficulty);
     setState((prev) => ({
       grid:          parseGrid(puzzle),
@@ -246,7 +255,10 @@ export function useSudoku() {
       const won  = !lost && newGrid.every((r) => r.every((c) => c.value !== null && !c.isError));
 
       if (isError && !lost) {
-        setTimeout(() => {
+        /* Cancela timer anterior antes de criar novo */
+        if (errorTimerRef.current) clearTimeout(errorTimerRef.current);
+        errorTimerRef.current = setTimeout(() => {
+          errorTimerRef.current = null;
           setState((s) => ({
             ...s,
             grid: s.grid.map((r, ri) =>
@@ -262,7 +274,9 @@ export function useSudoku() {
       }
 
       if (!isError) {
-        setTimeout(() => {
+        if (correctTimerRef.current) clearTimeout(correctTimerRef.current);
+        correctTimerRef.current = setTimeout(() => {
+          correctTimerRef.current = null;
           setState((s) => ({
             ...s,
             grid: s.grid.map((r, ri) =>
@@ -324,13 +338,20 @@ export function useSudoku() {
     setState((prev) => ({ ...prev, status: 'idle', selectedCell: null, isPaused: false }));
   }, []);
 
-  const completedNumbers = new Set<number>();
-  for (let n = 1; n <= 9; n++) {
-    const count = state.grid.flat().filter((c) => c.value === n && !c.isError).length;
-    if (count === 9) completedNumbers.add(n);
-  }
+  /* Computacoes memoizadas — evitam recalculo em cada render */
+  const completedNumbers = useMemo(() => {
+    const set = new Set<number>();
+    for (let n = 1; n <= 9; n++) {
+      const count = state.grid.flat().filter((c) => c.value === n && !c.isError).length;
+      if (count === 9) set.add(n);
+    }
+    return set;
+  }, [state.grid]);
 
-  const isBoardFull = state.grid.every((r) => r.every((c) => c.value !== null));
+  const isBoardFull = useMemo(
+    () => state.grid.every((r) => r.every((c) => c.value !== null)),
+    [state.grid]
+  );
 
   return {
     ...state,

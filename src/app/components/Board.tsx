@@ -1,4 +1,5 @@
 'use client';
+import { memo } from 'react';
 import { SudokuGrid } from '../types/sudoku';
 import { Cell } from './Cell';
 
@@ -9,7 +10,7 @@ interface BoardProps {
   isWon: boolean;
 }
 
-export function Board({ grid, selectedCell, onSelectCell, isWon }: BoardProps) {
+export const Board = memo(function Board({ grid, selectedCell, onSelectCell, isWon }: BoardProps) {
   return (
     <div
       className="animate-fade-in w-full rounded-3xl overflow-hidden shadow-2xl"
@@ -48,4 +49,4 @@ export function Board({ grid, selectedCell, onSelectCell, isWon }: BoardProps) {
       </div>
     </div>
   );
-}
+});
