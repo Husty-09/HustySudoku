@@ -35,13 +35,17 @@ function load(): AllStats {
 
 function save(stats: AllStats) {
   if (typeof window === 'undefined') return;
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(stats));
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(stats));
+  } catch {
+    /* Safari modo privado bloqueia localStorage -- falha silenciosa aceitavel */
+  }
 }
 
 export function useStats() {
   const [stats, setStats] = useState<AllStats>(load);
 
-  /** Vitória em jogo normal */
+  /** Vitoria em jogo normal */
   const recordWin = useCallback((difficulty: Difficulty, timeSeconds: number) => {
     setStats((prev) => {
       const d = prev[difficulty];
@@ -74,13 +78,13 @@ export function useStats() {
     });
   }, []);
 
-  /** Vitória no desafio diário (chave = "YYYY-MM-DD|difficulty") */
+  /** Vitoria no desafio diario (chave = "YYYY-MM-DD|difficulty") */
   const recordDailyWin = useCallback(
     (date: string, difficulty: Difficulty, timeSeconds: number) => {
       setStats((prev) => {
         const key = `${date}|${difficulty}`;
         const existing = prev.daily[key];
-        if (existing !== undefined && existing <= timeSeconds) return prev; // não melhora
+        if (existing !== undefined && existing <= timeSeconds) return prev;
         const next: AllStats = {
           ...prev,
           daily: { ...prev.daily, [key]: timeSeconds },
@@ -92,7 +96,7 @@ export function useStats() {
     [],
   );
 
-  /** Verifica se o desafio diário já foi concluído */
+  /** Verifica se o desafio diario ja foi concluido */
   const isDailyDone = useCallback(
     (date: string, difficulty: Difficulty) =>
       `${date}|${difficulty}` in stats.daily,

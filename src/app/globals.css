@@ -144,6 +144,24 @@ body {
   100% { transform: scale(1);   box-shadow: none; }
 }
 
+/* Botoes numericos do NumPad */
+.numpad-active {
+  background: rgba(var(--fg-rgb), 0.06);
+  border-color: rgba(var(--fg-rgb), 0.10);
+  color: rgba(var(--fg-rgb), 0.9);
+  cursor: pointer;
+}
+.numpad-active:hover {
+  background: rgba(var(--accent-rgb), 0.15);
+  border-color: rgba(var(--accent-rgb), 0.30);
+}
+.numpad-done {
+  background: rgba(var(--fg-rgb), 0.02);
+  border-color: rgba(var(--fg-rgb), 0.05);
+  color: rgba(var(--fg-rgb), 0.15);
+  cursor: default;
+}
+
 .animate-fade-in    { animation: fade-in       0.4s ease both; }
 .animate-scale-in   { animation: scale-in      0.3s ease both; }
 .animate-shake      { animation: shake         0.6s ease; }
