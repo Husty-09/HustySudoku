@@ -499,21 +499,3 @@ export default function SudokuPage() {
     </main>
   );
 }
-te novamente:</p>
-            <div className="flex gap-2">
-              {DIFFICULTIES.map((d) => (
-                <button key={d.value} onClick={() => startGame(d.value)}
-                  className="px-5 py-2.5 rounded-3xl text-sm font-semibold border transition-all duration-200 active:scale-95"
-                  style={d.value === difficulty
-                    ? { background: 'rgba(239,68,68,0.2)', borderColor: 'rgba(239,68,68,0.55)', color: '#f87171' }
-                    : { background: 'rgba(var(--fg-rgb),0.05)', borderColor: 'rgba(var(--fg-rgb),0.1)', color: 'rgba(var(--fg-rgb),0.65)' }
-                  }>{d.label}</button>
-              ))}
-            </div>
-          </div>
-        )}
-
-      </div>
-    </main>
-  );
-}
