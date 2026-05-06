@@ -5,12 +5,17 @@ import { useRef, useCallback, useState, useEffect } from 'react';
 export function useSounds() {
   const ctxRef = useRef<AudioContext | null>(null);
 
-  /* Inicializa direto do localStorage — evita useEffect com setState */
+  /* Inicializa direto do localStorage -- evita useEffect com setState */
   const [enabled, setEnabled] = useState<boolean>(() => {
     if (typeof window === 'undefined') return true;
     const saved = localStorage.getItem('sudoku-sound');
     return saved === null ? true : saved === '1';
   });
+
+  /* Fecha o AudioContext ao desmontar -- evita vazamento em navegacao SPA */
+  useEffect(() => {
+    return () => { ctxRef.current?.close(); };
+  }, []);
 
   /* Ref espelha o state para evitar closures stale nos callbacks de audio */
   const enabledRef = useRef(enabled);
@@ -39,7 +44,9 @@ export function useSounds() {
     return ctxRef.current;
   }, []);
 
-  /* Oscilador basico: freq, duracao, forma de onda, volume */
+  /* Oscilador basico: freq, duracao, forma de onda, volume
+   * Desconecta os nos do grafo apos o stop() para evitar
+   * acumulo de OscillatorNode/GainNode no AudioContext. */
   const tone = useCallback(
     (freq: number, dur: number, type: OscillatorType = 'sine', vol = 0.18) => {
       if (!enabledRef.current) return;
@@ -53,6 +60,10 @@ export function useSounds() {
       g.gain.exponentialRampToValueAtTime(0.001, c.currentTime + dur);
       osc.connect(g);
       g.connect(c.destination);
+      osc.onended = () => {
+        osc.disconnect();
+        g.disconnect();
+      };
       osc.start();
       osc.stop(c.currentTime + dur);
     },
@@ -76,7 +87,8 @@ export function useSounds() {
     setTimeout(() => tone(740, 0.18, 'sine', 0.12), 100); // F#5
   }, [tone]);
 
-  /** Numero errado -- dois tons dissonantes simultaneos */
+  /** Numero errado -- dois tons dissonantes simultaneos
+   *  Usa inline disconnect via onended em cada oscilador. */
   const playError = useCallback(() => {
     if (!enabledRef.current) return;
     const c = getCtx();
@@ -90,6 +102,10 @@ export function useSounds() {
       g.gain.exponentialRampToValueAtTime(0.001, c.currentTime + 0.28);
       osc.connect(g);
       g.connect(c.destination);
+      osc.onended = () => {
+        osc.disconnect();
+        g.disconnect();
+      };
       osc.start();
       osc.stop(c.currentTime + 0.28);
     });

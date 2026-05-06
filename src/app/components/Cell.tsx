@@ -21,28 +21,23 @@ interface CellProps {
 }
 
 /**
- * Grade 9x9 completa usando apenas COR (nunca espessura) para evitar layout shift.
- *
- * Cada celula define somente borderTop e borderLeft.
- * borderBottom/Right so aparecem na ultima linha/coluna (borda externa).
- *
- * Resultado visual:
- *   - Linhas finas entre cada celula (--inner-border)
- *   - Separadores 3x3 mais fortes (--block-border) em rows/cols 0, 3, 6
- *   - Borda externa grossa (--block-border) em row 8 bottom e col 8 right
+ * Lookup table pre-computada com os 81 estilos de borda.
+ * row/col de cada celula sao fixos -- nao ha motivo para recalcular
+ * a cada render. Avaliada uma unica vez no carregamento do modulo.
  */
-function blockBorderStyle(row: number, col: number): CSSProperties {
-  const block = '1px solid var(--block-border)';
-  const inner = '1px solid var(--inner-border)';
-  const none  = '1px solid transparent';
-
-  return {
-    borderTop:    row % 3 === 0 ? block : inner,
-    borderLeft:   col % 3 === 0 ? block : inner,
-    borderBottom: row === 8     ? block : none,
-    borderRight:  col === 8     ? block : none,
-  };
-}
+const BORDER_STYLES: CSSProperties[][] = Array.from({ length: 9 }, (_, row) =>
+  Array.from({ length: 9 }, (_, col) => {
+    const block = '1px solid var(--block-border)';
+    const inner = '1px solid var(--inner-border)';
+    const none  = '1px solid transparent';
+    return {
+      borderTop:    row % 3 === 0 ? block : inner,
+      borderLeft:   col % 3 === 0 ? block : inner,
+      borderBottom: row === 8     ? block : none,
+      borderRight:  col === 8     ? block : none,
+    };
+  })
+);
 
 export const Cell = memo(function Cell({
   value, notes, isFixed, isError, isCorrect,
@@ -82,6 +77,7 @@ export const Cell = memo(function Cell({
   return (
     <button
       onClick={() => onSelect(row, col)}
+      aria-label={value ? `Celula linha ${row + 1} coluna ${col + 1} valor ${value}` : `Celula linha ${row + 1} coluna ${col + 1} vazia`}
       className={`
         aspect-square w-full flex items-center justify-center
         transition-colors duration-150 active:scale-90
@@ -90,7 +86,7 @@ export const Cell = memo(function Cell({
       style={{
         background,
         animationDelay: isAnimatingWin ? `${winDelay}ms` : undefined,
-        ...blockBorderStyle(row, col),
+        ...BORDER_STYLES[row][col],
       }}
     >
       {/* Valor */}

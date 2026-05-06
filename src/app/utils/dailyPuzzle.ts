@@ -6,7 +6,7 @@ export function getTodayString(): string {
   return new Date().toISOString().split('T')[0];
 }
 
-/** Hash determinístico de uma string → número inteiro */
+/** Hash deterministico de uma string para inteiro (djb2) */
 function hashCode(str: string): number {
   let h = 5381;
   for (let i = 0; i < str.length; i++) {
@@ -15,7 +15,7 @@ function hashCode(str: string): number {
   return Math.abs(h);
 }
 
-/** LCG — gerador pseudoaleatório com semente */
+/** LCG -- gerador pseudoaleatório com semente */
 function seededRandom(seed: number) {
   let s = seed >>> 0;
   return () => {
@@ -25,19 +25,35 @@ function seededRandom(seed: number) {
 }
 
 /**
+ * Guard de re-entrancia: impede que duas chamadas simultaneas
+ * (improvavel em JS single-thread, mas defensivo) corrompam Math.random.
+ */
+let _generating = false;
+
+/**
  * Gera o puzzle do dia: mesmo resultado para qualquer dispositivo
  * na mesma data + dificuldade.
+ *
+ * Seguranca do monkey-patch: getSudoku() é sincrono e JS é single-thread,
+ * portanto nao ha janela de tempo entre a substituicao e a restauracao
+ * de Math.random. A guard _generating bloqueia qualquer chamada re-entrante.
  */
 export function getDailyPuzzle(difficulty: Difficulty, dateStr?: string) {
+  if (_generating) {
+    throw new Error('getDailyPuzzle: chamada re-entrante detectada');
+  }
+
   const date = dateStr ?? getTodayString();
   const seed = hashCode(`${date}|${difficulty}`);
   const rng  = seededRandom(seed);
 
   const orig = Math.random;
+  _generating = true;
   Math.random = rng;
   try {
     return getSudoku(difficulty);
   } finally {
     Math.random = orig;
+    _generating = false;
   }
 }

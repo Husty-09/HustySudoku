@@ -19,7 +19,6 @@ const DIFFICULTIES: { label: string; value: Difficulty }[] = [
 ];
 
 const MAX_MISTAKES = 3;
-const TODAY = getTodayString();
 
 export default function SudokuPage() {
   const {
@@ -32,6 +31,17 @@ export default function SudokuPage() {
 
   const { stats, recordWin, recordLoss, recordDailyWin, isDailyDone, resetStats } = useStats();
   const { theme, setTheme } = useTheme();
+
+  /* today calculado dentro do componente e atualizado a meia-noite */
+  const [today, setToday] = useState(getTodayString);
+  useEffect(() => {
+    const tick = () => {
+      const now = getTodayString();
+      setToday((prev) => (prev !== now ? now : prev));
+    };
+    const id = setInterval(tick, 60_000);
+    return () => clearInterval(id);
+  }, []);
   const sounds = useSounds();
   const [showStats, setShowStats] = useState(false);
   const [mounted, setMounted] = useState(false);
@@ -47,15 +57,21 @@ export default function SudokuPage() {
     return () => cancelAnimationFrame(rafId);
   }, []);
 
-  const handleCloseOnboarding = () => {
+  const handleCloseOnboarding = useCallback(() => {
     localStorage.setItem('sudoku-onboarding-seen', '1');
     setShowOnboarding(false);
-  };
+  }, []);
 
-  const dailyDone = isDailyDone(TODAY, 'medium');
+  const dailyDone = isDailyDone(today, 'medium');
   const prevStatusRef       = useRef(status);
   const prevMistakesRef     = useRef(mistakes);
   const prevCorrectCountRef = useRef(0);
+
+  /* Reseta refs de deteccao de som ao iniciar novo jogo */
+  useEffect(() => {
+    prevMistakesRef.current     = 0;
+    prevCorrectCountRef.current = 0;
+  }, [gameId]);
 
   /* ── Grava estatísticas + sons de fim de jogo ───── */
   useEffect(() => {
@@ -63,7 +79,7 @@ export default function SudokuPage() {
     if (prev === 'playing') {
       const elapsed = Math.floor((Date.now() - gameStartTime) / 1000);
       if (status === 'won') {
-        if (isDaily) recordDailyWin(TODAY, difficulty, elapsed);
+        if (isDaily) recordDailyWin(today, difficulty, elapsed);
         else recordWin(difficulty, elapsed);
         sounds.playWin();
       } else if (status === 'lost') {
@@ -124,6 +140,7 @@ export default function SudokuPage() {
         {/* Botão de tutorial — canto superior esquerdo */}
         <button
           onClick={() => setShowOnboarding(true)}
+          aria-label="Abrir guia de como jogar"
           className="absolute top-4 left-4 w-10 h-10 rounded-2xl border flex items-center justify-center transition-all active:scale-90 animate-fade-in"
           style={{ background: 'rgba(var(--fg-rgb),0.05)', borderColor: 'rgba(var(--fg-rgb),0.1)' }}
         >
@@ -140,6 +157,7 @@ export default function SudokuPage() {
         {mounted && (
         <button
           onClick={() => setTheme(theme === 'light' ? 'dark' : 'light')}
+          aria-label={theme === 'light' ? 'Ativar modo escuro' : 'Ativar modo claro'}
           title={theme === 'light' ? 'Modo escuro' : 'Modo claro'}
           className="absolute top-4 right-4 w-10 h-10 rounded-2xl border flex items-center justify-center transition-all active:scale-90 animate-fade-in"
           style={{
@@ -178,6 +196,7 @@ export default function SudokuPage() {
           href="https://github.com/Husty-09/HustySudoku"
           target="_blank"
           rel="noopener noreferrer"
+          aria-label="Ver codigo-fonte no GitHub"
           title="Ver no GitHub"
           className="absolute top-16 right-4 w-10 h-10 rounded-2xl border flex items-center justify-center transition-all active:scale-90 animate-fade-in"
           style={{
@@ -239,7 +258,7 @@ export default function SudokuPage() {
           }
         >
           <span>📅</span>
-          {dailyDone ? `Desafio do dia concluído ✓` : `Desafio do dia — ${TODAY}`}
+          {dailyDone ? `Desafio do dia concluído ✓` : `Desafio do dia — ${today}`}
         </button>
 
         {/* ── Estatísticas ── */}
@@ -281,6 +300,7 @@ export default function SudokuPage() {
 
         {/* Home */}
         <button onClick={goHome}
+          aria-label="Voltar para a tela inicial"
           className="flex items-center justify-center w-11 h-11 rounded-2xl border transition-all active:scale-90"
           style={{ background: 'rgba(var(--accent-rgb),0.1)', borderColor: 'rgba(var(--accent-rgb),0.25)' }}
         >
@@ -314,6 +334,7 @@ export default function SudokuPage() {
         {/* Som */}
         <button
           onClick={sounds.toggleSound}
+          aria-label={sounds.enabled ? 'Desativar sons' : 'Ativar sons'}
           title={sounds.enabled ? 'Desativar som' : 'Ativar som'}
           className="flex items-center justify-center w-11 h-11 rounded-2xl border border-white/10 transition-all active:scale-90"
           style={{ background: 'rgba(var(--fg-rgb),0.05)' }}
@@ -338,6 +359,7 @@ export default function SudokuPage() {
         {/* Pause */}
         {isPlaying && (
           <button onClick={togglePause}
+            aria-label={isPaused ? 'Retomar jogo' : 'Pausar jogo'}
             className="flex items-center justify-center w-11 h-11 rounded-2xl border border-white/10 transition-all active:scale-90"
             style={{ background: isPaused ? 'rgba(var(--accent-rgb),0.15)' : 'rgba(var(--fg-rgb),0.05)' }}
           >
@@ -358,6 +380,7 @@ export default function SudokuPage() {
 
         {/* Reiniciar */}
         <button onClick={() => startGame(difficulty, autoCheck)}
+          aria-label="Reiniciar partida"
           className="flex items-center justify-center w-11 h-11 rounded-2xl border border-white/10 transition-all active:scale-90"
           style={{ background: 'rgba(var(--fg-rgb),0.05)' }}
         >

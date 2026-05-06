@@ -1,5 +1,7 @@
 'use client';
 
+import { memo } from 'react';
+
 interface NumPadProps {
   onInput: (num: number) => void;
   onErase: () => void;
@@ -8,7 +10,9 @@ interface NumPadProps {
   completedNumbers: Set<number>;
 }
 
-export function NumPad({ onInput, onErase, isNotesMode, onToggleNotes, completedNumbers }: NumPadProps) {
+export const NumPad = memo(function NumPad({
+  onInput, onErase, isNotesMode, onToggleNotes, completedNumbers,
+}: NumPadProps) {
   return (
     <div className="animate-slide-up flex flex-col items-center gap-2 w-full max-w-xs mx-auto">
 
@@ -21,7 +25,6 @@ export function NumPad({ onInput, onErase, isNotesMode, onToggleNotes, completed
           : { background: 'rgba(var(--fg-rgb),0.05)', borderColor: 'rgba(var(--fg-rgb),0.12)', color: 'rgba(var(--fg-rgb),0.55)' }
         }
       >
-        {/* Ícone de lápis */}
         <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24"
           fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
           <path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/>
@@ -29,7 +32,7 @@ export function NumPad({ onInput, onErase, isNotesMode, onToggleNotes, completed
         Rascunho {isNotesMode ? 'ativo' : 'desativado'}
       </button>
 
-      {/* Grade de números */}
+      {/* Grade de numeros */}
       <div className="grid grid-cols-3 gap-2 w-full">
         {[1, 2, 3, 4, 5, 6, 7, 8, 9].map((num) => {
           const done = completedNumbers.has(num);
@@ -38,26 +41,14 @@ export function NumPad({ onInput, onErase, isNotesMode, onToggleNotes, completed
               key={num}
               onClick={() => !done && onInput(num)}
               disabled={done}
-              className="h-14 text-xl font-bold rounded-2xl border transition-all duration-150 relative"
-              style={done
-                ? {
-                    background: 'rgba(var(--fg-rgb),0.02)',
-                    borderColor: 'rgba(var(--fg-rgb),0.05)',
-                    color: 'rgba(var(--fg-rgb),0.15)',
-                    cursor: 'default',
-                  }
-                : {
-                    background: 'rgba(var(--fg-rgb),0.06)',
-                    borderColor: 'rgba(var(--fg-rgb),0.10)',
-                    color: 'rgba(var(--fg-rgb),0.9)',
-                  }
-              }
-              onMouseEnter={e => {
-                if (!done) e.currentTarget.style.background = 'rgba(var(--accent-rgb),0.15)';
-              }}
-              onMouseLeave={e => {
-                if (!done) e.currentTarget.style.background = 'rgba(var(--fg-rgb),0.06)';
-              }}
+              className={`
+                h-14 text-xl font-bold rounded-2xl border
+                transition-all duration-150 relative
+                ${done
+                  ? 'numpad-done'
+                  : 'numpad-active active:scale-95'
+                }
+              `}
             >
               {done ? (
                 <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24"
@@ -85,12 +76,12 @@ export function NumPad({ onInput, onErase, isNotesMode, onToggleNotes, completed
       {/* Apagar */}
       <button
         onClick={onErase}
-        className="w-full h-12 text-sm font-semibold rounded-2xl border border-red-500/30 text-red-400 transition-all duration-150 active:scale-95"
+        className="w-full h-12 text-sm font-semibold rounded-2xl border border-red-500/30 text-red-400 transition-all duration-150 active:scale-95 hover:bg-red-500/20"
         style={{ background: 'rgba(239,68,68,0.1)' }}
       >
-        ✕ Apagar
+        Apagar
       </button>
 
     </div>
   );
-}
+});

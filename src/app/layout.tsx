@@ -1,6 +1,7 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import { Analytics } from "@vercel/analytics/react";
+import { ErrorBoundary } from "./components/ErrorBoundary";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -25,6 +26,21 @@ export const metadata: Metadata = {
     apple: "/apple-touch-icon.png",
   },
   manifest: "/site.webmanifest",
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: "black-translucent",
+    title: "Husty Sudoku",
+  },
+  other: {
+    "mobile-web-app-capable": "yes",
+  },
+};
+
+export const viewport: Viewport = {
+  themeColor: [
+    { media: "(prefers-color-scheme: dark)",  color: "#0d0d0d" },
+    { media: "(prefers-color-scheme: light)", color: "#f5f5f0" },
+  ],
 };
 
 export default function RootLayout({
@@ -38,7 +54,7 @@ export default function RootLayout({
       className={`${geistSans.variable} ${geistMono.variable} h-dvh overflow-hidden antialiased`}
     >
       <body className="h-dvh overflow-hidden">
-        {children}
+        <ErrorBoundary>{children}</ErrorBoundary>
         <Analytics />
       </body>
     </html>
